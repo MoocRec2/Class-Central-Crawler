@@ -9,18 +9,25 @@ from selenium.common.exceptions import NoSuchElementException
 import json
 from json import JSONDecodeError
 from db_connector import Thread
+from db_connector import Course
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
+
+base_url = 'https://www.classcentral.com'
 
 options = Options()
 options.add_argument('--headless')
 options.add_argument('--disable-gpu')
 driver = webdriver.Chrome('C:/chromedriver', options=options)
 
-driver.get('https://www.classcentral.com/subject/ai')
+url = 'https://www.classcentral.com/subject/ai'
+
+print('Extracting Courses of Subject:', url)
+print('Navigating to Page...')
+driver.get(url)
 
 row_elements = driver.find_elements_by_tag_name('tr')
-print(row_elements.__len__())
+print(row_elements.__len__(), 'Potential Courses')
 
 courses = []
 total_no_of_exceptions = 0
@@ -31,6 +38,7 @@ for row_element in row_elements:
         course_element = cell_elements[1]
 
         course_name = course_element.find_element_by_xpath('a/span').text
+        course_link = course_element.find_elements_by_tag_name('a')[1].get_attribute('href')
 
         platform = course_element.find_element_by_xpath('span/a').text
 
@@ -44,24 +52,24 @@ for row_element in row_elements:
                 rating -= 1
             elif class_attribute.__contains__('icon-star-half'):
                 rating -= 0.5
-            # print(class_attribute)
 
         courses.append({
             'title': course_name,
             'platform': platform,
-            'rating': rating
+            'rating': rating,
+            'course_link': course_link
         })
 
     except IndexError:
-        # print('Index Error')
         total_no_of_exceptions += 1
     except NoSuchElementException:
-        # print('No Such Element')
         total_no_of_exceptions += 1
 
 print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
 print('Courses Extracted:', courses.__len__())
 
-pprint(courses)
+status = Course.upsert_courses_alt(courses)
+
+print('Courses have been saved to the database')
 
 driver.quit()
