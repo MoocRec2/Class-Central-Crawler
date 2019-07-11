@@ -1,0 +1,63 @@
+import time
+from seleniumwire import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import ElementClickInterceptedException
+from selenium.common.exceptions import NoSuchElementException
+import json
+from json import JSONDecodeError
+from db_connector import Thread
+from pprint import pprint
+from selenium.webdriver.chrome.options import Options
+
+options = Options()
+options.add_argument('--headless')
+options.add_argument('--disable-gpu')
+driver = webdriver.Chrome('C:/chromedriver', options=options)
+
+driver.get('https://www.classcentral.com/subject/ai')
+
+row_elements = driver.find_elements_by_tag_name('tr')
+print(row_elements.__len__())
+
+courses = []
+
+for row_element in row_elements:
+    try:
+        cell_elements = row_element.find_elements_by_tag_name('td')
+        course_element = cell_elements[1]
+
+        course_name = course_element.find_element_by_xpath('a/span').text
+
+        platform = course_element.find_element_by_xpath('span/a').text
+
+        review_element = cell_elements[3].find_element_by_class_name('review-rating')
+
+        star_tags = review_element.find_elements_by_tag_name('i')
+        rating = 5
+        for star_tag in star_tags:
+            class_attribute = star_tag.get_attribute('class')
+            if class_attribute.__contains__('icon-star-gray-light'):
+                rating -= 1
+            elif class_attribute.__contains__('icon-star-half'):
+                rating -= 0.5
+            # print(class_attribute)
+
+        courses.append({
+            'title': course_name,
+            'platform': platform,
+            'rating': rating
+        })
+
+    except IndexError:
+        print('Index Error')
+    except NoSuchElementException:
+        print('No Such Element')
+
+print('Courses Extracted: ', courses.__len__())
+
+pprint(courses)
+
+driver.quit()
