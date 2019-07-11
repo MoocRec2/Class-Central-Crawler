@@ -1,5 +1,6 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
+from pprint import pprint
 
 # client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
 client = MongoClient('mongodb://localhost:27017/moocrecv2')
@@ -83,6 +84,22 @@ class Course:
             return False
 
     @staticmethod
+    def upsert_courses_alt(courses):
+        try:
+            for course in courses:
+                if 'id' not in course.keys():
+                    database.courses.insert_one(course)
+                else:
+                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        except:
+            print('An Error Occurred')
+            return False
+
+    @staticmethod
     def get_course(course_key):
         try:
             courses = database.courses.find({'key': course_key})
@@ -94,7 +111,7 @@ class Course:
     @staticmethod
     def get_courses():
         try:
-            courses = database.courses.find({'platform': 0})
+            courses = database.courses.find()
             return courses
         except:
             return None
@@ -115,3 +132,23 @@ class Subject:
         except:
             print('An Error Occurred')
             return False
+
+
+def convert_platform_representation_to_string():
+    courses = Course.get_courses()
+    new_courses = []
+    for temp_course in courses:
+        course = temp_course
+        try:
+            if course['platform'] == 0:
+                course['platform'] = 'Edx'
+            elif course['platform'] == 1:
+                course['platform'] = 'FutureLearn'
+            else:
+                print('The attribute \'platform\' does not exist')
+        except KeyError:
+            course['platform'] = 'Edx'
+        new_courses.append(course)
+
+    result = Course.upsert_courses(new_courses)
+    print('Result =', result)
