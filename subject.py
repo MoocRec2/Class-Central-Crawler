@@ -23,6 +23,7 @@ row_elements = driver.find_elements_by_tag_name('tr')
 print(row_elements.__len__())
 
 courses = []
+total_no_of_exceptions = 0
 
 for row_element in row_elements:
     try:
@@ -52,11 +53,14 @@ for row_element in row_elements:
         })
 
     except IndexError:
-        print('Index Error')
+        # print('Index Error')
+        total_no_of_exceptions += 1
     except NoSuchElementException:
-        print('No Such Element')
+        # print('No Such Element')
+        total_no_of_exceptions += 1
 
-print('Courses Extracted: ', courses.__len__())
+print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
+print('Courses Extracted:', courses.__len__())
 
 pprint(courses)
 
