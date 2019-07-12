@@ -65,8 +65,15 @@ for row_element in row_elements:
     except NoSuchElementException:
         total_no_of_exceptions += 1
 
+# Filter Courses - To get only Coursera Courses
+coursera_courses = []
+for course in courses:
+    if course['platform'] == 'Coursera':
+        coursera_courses.append(course)
+
 print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
 print('Courses Extracted:', courses.__len__())
+print('Coursera Courses:', coursera_courses.__len__())
 
 status = Course.upsert_courses_alt(courses)
 
