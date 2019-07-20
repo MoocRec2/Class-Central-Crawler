@@ -73,11 +73,13 @@ class Course:
     @staticmethod
     def upsert_courses(courses):
         try:
-            for course in courses:
-                try:
-                    database.courses.update_one({'key': course['key']}, {"$set": course}, upsert=True)
-                except KeyError:
-                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
+            if 'key' in courses[0].keys():
+                for course in courses:
+                    database.courses.update_one({'key': course['key']}, {'$set': course}, upsert=True)
+            else:
+                for course in courses:
+                    database.courses.update_one({'course_link': course['course_link']}, {'$set': course},
+                                                upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
@@ -90,10 +92,8 @@ class Course:
     def upsert_courses_alt(courses):
         try:
             for course in courses:
-                if 'id' not in course.keys():
-                    database.courses.insert_one(course)
-                else:
-                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
+                database.courses.update_one({'course_link': course['course_link']}, {'$set': course},
+                                            upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
@@ -156,6 +156,3 @@ def convert_platform_representation_to_string():
 
     result = Course.upsert_courses(new_courses)
     print('Result =', result)
-
-
-convert_platform_representation_to_string()
