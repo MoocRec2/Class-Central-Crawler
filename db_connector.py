@@ -74,7 +74,10 @@ class Course:
     def upsert_courses(courses):
         try:
             for course in courses:
-                database.courses.update_one({'key': course['key']}, {"$set": course}, upsert=True)
+                try:
+                    database.courses.update_one({'key': course['key']}, {"$set": course}, upsert=True)
+                except KeyError:
+                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
@@ -144,11 +147,15 @@ def convert_platform_representation_to_string():
                 course['platform'] = 'Edx'
             elif course['platform'] == 1:
                 course['platform'] = 'FutureLearn'
-            else:
-                print('The attribute \'platform\' does not exist')
+            # else:
+            # print('The attribute \'platform\' does not exist')
+            # course['platform'] = 'Edx'
         except KeyError:
             course['platform'] = 'Edx'
         new_courses.append(course)
 
     result = Course.upsert_courses(new_courses)
     print('Result =', result)
+
+
+convert_platform_representation_to_string()

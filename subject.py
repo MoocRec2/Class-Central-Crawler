@@ -75,7 +75,7 @@ print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
 print('Courses Extracted:', courses.__len__())
 print('Coursera Courses:', coursera_courses.__len__())
 
-status = Course.upsert_courses_alt(courses)
+status = Course.upsert_courses_alt(coursera_courses)
 
 print('Courses have been saved to the database')
 
