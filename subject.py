@@ -13,6 +13,8 @@ from db_connector import Course
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
 
+start_time = time.time()
+
 base_url = 'https://www.classcentral.com'
 
 options = Options()
@@ -77,6 +79,14 @@ print('Coursera Courses:', coursera_courses.__len__())
 
 status = Course.upsert_courses_alt(coursera_courses)
 
-print('Courses have been saved to the database')
+if status:
+    print('Courses have been saved to the database')
+else:
+    print('Error Occurred while saving to database')
 
 driver.quit()
+end_time = time.time()
+
+time_elapsed = end_time - start_time
+
+print('Elapsed Time:', time_elapsed, 'seconds')
