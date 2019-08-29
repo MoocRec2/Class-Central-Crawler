@@ -1,3 +1,5 @@
+# Retrieves all the courses of a certain subject given the URI path of the subject
+
 import time
 from seleniumwire import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
