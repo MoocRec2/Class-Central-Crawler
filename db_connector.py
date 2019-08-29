@@ -1,9 +1,16 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 from pprint import pprint
+import json
+
+with open('./db_credentials.json', 'r') as f:
+    db_credentials = json.load(f)
+
+connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
-client = MongoClient('mongodb://localhost:27017/moocrecv2')
+# client = MongoClient('mongodb://localhost:27017/moocrecv2')
+client = MongoClient(connection_string)
 
 database = client.moocrecv2
 
