@@ -15,80 +15,83 @@ from db_connector import Course
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
 
-start_time = time.time()
 
-base_url = 'https://www.classcentral.com'
+def retrieve_courses_from_subject(subject_info):
+    start_time = time.time()
 
-options = Options()
-options.add_argument('--headless')
-options.add_argument('--disable-gpu')
-driver = webdriver.Chrome('C:/chromedriver', options=options)
+    base_url = 'https://www.classcentral.com'
 
-url = 'https://www.classcentral.com/subject/ai'
+    options = Options()
+    options.add_argument('--headless')
+    options.add_argument('--disable-gpu')
+    driver = webdriver.Chrome('C:/chromedriver', options=options)
 
-print('Extracting Courses of Subject:', url)
-print('Navigating to Page...')
-driver.get(url)
+    url = subject_info['url']
 
-row_elements = driver.find_elements_by_tag_name('tr')
-print(row_elements.__len__(), 'Potential Courses')
+    print('Extracting Courses of Subject:', url)
+    print('Navigating to Page...')
+    driver.get(url)
 
-courses = []
-total_no_of_exceptions = 0
+    row_elements = driver.find_elements_by_tag_name('tr')
+    print(row_elements.__len__(), 'Potential Courses')
 
-for row_element in row_elements:
-    try:
-        cell_elements = row_element.find_elements_by_tag_name('td')
-        course_element = cell_elements[1]
+    courses = []
+    total_no_of_exceptions = 0
 
-        course_name = course_element.find_element_by_xpath('a/span').text
-        course_link = course_element.find_elements_by_tag_name('a')[1].get_attribute('href')
+    for row_element in row_elements:
+        try:
+            cell_elements = row_element.find_elements_by_tag_name('td')
+            course_element = cell_elements[1]
 
-        platform = course_element.find_element_by_xpath('span/a').text
+            course_name = course_element.find_element_by_xpath('a/span').text
+            course_link = course_element.find_elements_by_tag_name('a')[1].get_attribute('href')
 
-        review_element = cell_elements[3].find_element_by_class_name('review-rating')
+            platform = course_element.find_element_by_xpath('span/a').text
 
-        star_tags = review_element.find_elements_by_tag_name('i')
-        rating = 5
-        for star_tag in star_tags:
-            class_attribute = star_tag.get_attribute('class')
-            if class_attribute.__contains__('icon-star-gray-light'):
-                rating -= 1
-            elif class_attribute.__contains__('icon-star-half'):
-                rating -= 0.5
+            review_element = cell_elements[3].find_element_by_class_name('review-rating')
 
-        courses.append({
-            'title': course_name,
-            'platform': platform,
-            'rating': rating,
-            'course_link': course_link
-        })
+            star_tags = review_element.find_elements_by_tag_name('i')
+            rating = 5
+            for star_tag in star_tags:
+                class_attribute = star_tag.get_attribute('class')
+                if class_attribute.__contains__('icon-star-gray-light'):
+                    rating -= 1
+                elif class_attribute.__contains__('icon-star-half'):
+                    rating -= 0.5
 
-    except IndexError:
-        total_no_of_exceptions += 1
-    except NoSuchElementException:
-        total_no_of_exceptions += 1
+            courses.append({
+                'title': course_name,
+                'platform': platform,
+                'rating': rating,
+                'course_link': course_link,
+                'subject': subject_info['key']
+            })
 
-# Filter Courses - To get only Coursera Courses
-coursera_courses = []
-for course in courses:
-    if course['platform'] == 'Coursera':
-        coursera_courses.append(course)
+        except IndexError:
+            total_no_of_exceptions += 1
+        except NoSuchElementException:
+            total_no_of_exceptions += 1
 
-print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
-print('Courses Extracted:', courses.__len__())
-print('Coursera Courses:', coursera_courses.__len__())
+    # Filter Courses - To get only Coursera Courses
+    coursera_courses = []
+    for course in courses:
+        if course['platform'] == 'Coursera':
+            coursera_courses.append(course)
 
-status = Course.upsert_courses_alt(coursera_courses)
+    print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
+    print('Courses Extracted:', courses.__len__())
+    print('Coursera Courses:', coursera_courses.__len__())
 
-if status:
-    print('Courses have been saved to the database')
-else:
-    print('Error Occurred while saving to database')
+    status = Course.upsert_courses_alt(coursera_courses)
 
-driver.quit()
-end_time = time.time()
+    if status:
+        print('Courses have been saved to the database')
+    else:
+        print('Error Occurred while saving to database')
 
-time_elapsed = end_time - start_time
+    driver.quit()
+    end_time = time.time()
 
-print('Elapsed Time:', time_elapsed, 'seconds')
+    time_elapsed = end_time - start_time
+
+    print('Elapsed Time:', time_elapsed, 'seconds')
