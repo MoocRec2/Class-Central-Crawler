@@ -97,6 +97,11 @@ class Course:
 
     @staticmethod
     def upsert_courses_alt(courses):
+        '''
+        For Coursera Courses
+        :param courses: list of courses
+        :return: status of upsert operation
+        '''
         try:
             for course in courses:
                 database.courses.update_one({'course_link': course['course_link']}, {'$set': course},
@@ -163,3 +168,19 @@ def convert_platform_representation_to_string():
 
     result = Course.upsert_courses(new_courses)
     print('Result =', result)
+
+
+class CourseraThreads:
+
+    @staticmethod
+    def upsert_courses(threads):
+        try:
+            for thread in threads:
+                database.coursera_threads.update_one({'course_id': thread['course_id']}, {"$set": thread}, upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        except:
+            print('An Error Occurred')
+            return False
