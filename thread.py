@@ -10,6 +10,7 @@ import json
 from json import JSONDecodeError
 from db_connector import Thread
 from db_connector import Course
+from db_connector import CourseraThreads
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
 
@@ -28,37 +29,29 @@ course = Course.get_course({'course_link': course_url})
 
 driver.get(course_url)
 
-# ----- Description -----
+# ----- Course Description -----
 article_elem = driver.find_element_by_tag_name('article')
-# TODO: CLick read more and expand article
 div_elem = article_elem.find_element_by_tag_name('div')
 description = div_elem.text
 course['description'] = description
 
-# ----- Review Rating -----
-# rating_elem = driver.find_element_by_class_name('review-rating')
-#
-# full_star_elems = rating_elem.find_elements_by_class_name('icon-star')
-# half_star_elems = rating_elem.find_elements_by_class_name('icon-star-half')
-# print(full_star_elems.__len__())
-# print(half_star_elems.__len__())
-#
-# if half_star_elems.__len__() > 0:
-#     rating = full_star_elems.__len__() + 0.5
-# else:
-#     rating = full_star_elems.__len__()
-#
-# print('Rating: ', rating)
+db_operation_status = Course.upsert_courses_alt([course])
+if not db_operation_status:
+    print('Additional course information could not be saved to the database')
 
-# ----- Reviews -----
+# ----- Reviews (Posts of Thread) -----
 review_div_elem = driver.find_element_by_id('reviews-items')
 review_items_elems = review_div_elem.find_elements_by_xpath('./div')
 print('No. of Review Items:', review_items_elems.__len__())
 
 reviews = []
 
+# TODO: Pagination
+
 for review_item_elem in review_items_elems:
     review = {}
+
+    # Title
 
     # Content
     read_more = 0
@@ -87,7 +80,16 @@ for review_item_elem in review_items_elems:
     review['rating'] = rating
 
     reviews.append(review)
+
+# Pack Information into a single object
+thread = {'course_id': course['_id'], 'reviews': reviews}
+# thread['course_url'] = course['_id']
+
+db_operation_status = CourseraThreads.upsert_courses([thread])
+if not db_operation_status:
+    print('Thread information could not be saved to the database')
+
 print('Read_more Count:', read_more)
-pprint(reviews)
+print('Review Length:', reviews.__len__())
 driver.quit()
 # pprint(course)
