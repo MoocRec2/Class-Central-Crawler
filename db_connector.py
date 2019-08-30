@@ -184,3 +184,32 @@ class CourseraThreads:
         except:
             print('An Error Occurred')
             return False
+
+
+class CourseAlt:
+
+    @staticmethod
+    def upsert_courses(courses):
+        try:
+            for course in courses:
+                database.courses_alt.update_one({'course_link': course['course_link']}, {'$set': course},
+                                                upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        # except:
+        #     print('An Error Occurred')
+        #     return False
+
+    @staticmethod
+    def get_courses(q):
+        try:
+            courses = database.courses_alt.find(q)
+            return courses
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return []
+        except:
+            print('An Error Occurred')
+            return []
