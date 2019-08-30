@@ -110,18 +110,18 @@ class Course:
             return False
 
     @staticmethod
-    def get_course(course_key):
+    def get_course(search_query):
         try:
-            courses = database.courses.find({'key': course_key})
+            courses = database.courses.find(search_query)
             return courses[0]
         except:
             return None
             pass
 
     @staticmethod
-    def get_courses():
+    def get_courses(search_query):
         try:
-            courses = database.courses.find()
+            courses = database.courses.find(search_query)
             return courses
         except:
             return None
@@ -145,7 +145,7 @@ class Subject:
 
 
 def convert_platform_representation_to_string():
-    courses = Course.get_courses()
+    courses = Course.get_courses({})
     new_courses = []
     for temp_course in courses:
         course = temp_course
