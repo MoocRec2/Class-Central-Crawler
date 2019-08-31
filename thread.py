@@ -1,5 +1,5 @@
 import time
-from seleniumwire import webdriver
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
@@ -15,6 +15,7 @@ from db_connector import CourseraThreads
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
 import copy
+import urllib.parse
 
 
 def retrieve_thread_of_course(course):
@@ -58,6 +59,28 @@ def retrieve_thread_of_course(course):
     else:
         print(description)
         print('INSERTED')
+
+    # TODO: Picture
+
+    #  Proper URL
+    wrapper_div_elem = driver.find_element_by_xpath(
+        '//div[@class=\'col width-2-3 xlarge-up-width-3-5 xxlarge-up-width-2-3 padding-left-small\']')
+    proper_url = wrapper_div_elem.find_element_by_tag_name('a').get_attribute('href')
+    # TODO: Extract URL
+    components = proper_url.split('&')
+    proper_url = components[5]
+    proper_url = proper_url.split('=')[1]
+    proper_url = urllib.parse.unquote(proper_url)
+    # print(proper_url)
+    # quit()
+
+    temp_course = copy.deepcopy(course)
+    temp_course.pop('_id', 'qwe')
+    temp_course['proper_url'] = proper_url
+    temp_course['link_fixed'] = True
+    db_operation_status = CourseAlt.upsert_courses([temp_course])
+    if not db_operation_status:
+        print('UNABLE to Save Proper URL in DB')
 
     # ----- Reviews (Posts of Thread) -----
     try:
