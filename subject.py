@@ -88,11 +88,11 @@ def retrieve_courses_from_subject(subject_info):
     # Filter Courses - To get only Coursera Courses
     coursera_courses = []
     for course in courses:
-        # if course['platform'] == 'Coursera':
-        #     coursera_courses.append(course)
+        if course['platform'] == 'Coursera':
+            coursera_courses.append(course)
         # else:
         #     pprint(course)
-        coursera_courses.append(course)
+        # coursera_courses.append(course)
 
     print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
     print('Courses Extracted:', courses.__len__())

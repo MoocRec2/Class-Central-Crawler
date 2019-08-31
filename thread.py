@@ -57,16 +57,12 @@ def retrieve_thread_of_course(course):
     if not db_operation_status:
         print('Additional course information could not be saved to the database')
     else:
-        print(description)
         print('INSERTED')
-
-    # TODO: Picture
 
     #  Proper URL
     wrapper_div_elem = driver.find_element_by_xpath(
         '//div[@class=\'col width-2-3 xlarge-up-width-3-5 xxlarge-up-width-2-3 padding-left-small\']')
     proper_url = wrapper_div_elem.find_element_by_tag_name('a').get_attribute('href')
-    # TODO: Extract URL
     components = proper_url.split('&')
     proper_url = components[5]
     proper_url = proper_url.split('=')[1]
