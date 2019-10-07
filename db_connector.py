@@ -1,9 +1,16 @@
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
 from pprint import pprint
+import json
+
+with open('./db_credentials.json', 'r') as f:
+    db_credentials = json.load(f)
+
+connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
 client = MongoClient('mongodb://localhost:27017/moocrecv2')
+# client = MongoClient(connection_string)
 
 database = client.moocrecv2
 
@@ -73,11 +80,13 @@ class Course:
     @staticmethod
     def upsert_courses(courses):
         try:
-            for course in courses:
-                try:
-                    database.courses.update_one({'key': course['key']}, {"$set": course}, upsert=True)
-                except KeyError:
-                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
+            if 'key' in courses[0].keys():
+                for course in courses:
+                    database.courses.update_one({'key': course['key']}, {'$set': course}, upsert=True)
+            else:
+                for course in courses:
+                    database.courses.update_one({'course_link': course['course_link']}, {'$set': course},
+                                                upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
@@ -88,12 +97,15 @@ class Course:
 
     @staticmethod
     def upsert_courses_alt(courses):
+        '''
+        For Coursera Courses
+        :param courses: list of courses
+        :return: status of upsert operation
+        '''
         try:
             for course in courses:
-                if 'id' not in course.keys():
-                    database.courses.insert_one(course)
-                else:
-                    database.courses.update_one({'_id': course['_id']}, {"$set": course}, upsert=True)
+                database.courses.update_one({'course_link': course['course_link']}, {'$set': course},
+                                            upsert=True)
             return True
         except ServerSelectionTimeoutError:
             print('Error Connecting to Database')
@@ -103,18 +115,18 @@ class Course:
             return False
 
     @staticmethod
-    def get_course(course_key):
+    def get_course(search_query):
         try:
-            courses = database.courses.find({'key': course_key})
+            courses = database.courses.find(search_query)
             return courses[0]
         except:
             return None
             pass
 
     @staticmethod
-    def get_courses():
+    def get_courses(search_query):
         try:
-            courses = database.courses.find()
+            courses = database.courses.find(search_query)
             return courses
         except:
             return None
@@ -138,7 +150,7 @@ class Subject:
 
 
 def convert_platform_representation_to_string():
-    courses = Course.get_courses()
+    courses = Course.get_courses({})
     new_courses = []
     for temp_course in courses:
         course = temp_course
@@ -158,4 +170,46 @@ def convert_platform_representation_to_string():
     print('Result =', result)
 
 
-convert_platform_representation_to_string()
+class CourseraThreads:
+
+    @staticmethod
+    def upsert_courses(threads):
+        try:
+            for thread in threads:
+                database.coursera_threads.update_one({'course_id': thread['course_id']}, {"$set": thread}, upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        except:
+            print('An Error Occurred')
+            return False
+
+
+class CourseAlt:
+
+    @staticmethod
+    def upsert_courses(courses):
+        try:
+            for course in courses:
+                database.courses_alt.update_one({'course_link': course['course_link']}, {'$set': course},
+                                                upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        # except:
+        #     print('An Error Occurred')
+        #     return False
+
+    @staticmethod
+    def get_courses(q):
+        try:
+            courses = database.courses_alt.find(q)
+            return courses
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return []
+        except:
+            print('An Error Occurred')
+            return []
