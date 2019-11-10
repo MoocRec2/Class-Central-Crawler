@@ -59,9 +59,14 @@ def retrieve_thread_of_course(course):
     else:
         print('INSERTED')
 
-    #  Proper URL
-    wrapper_div_elem = driver.find_element_by_xpath(
-        '//div[@class=\'col width-2-3 xlarge-up-width-3-5 xxlarge-up-width-2-3 padding-left-small\']')
+    try:
+        #  Proper URL
+        wrapper_div_elem = driver.find_element_by_xpath(
+            '//div[@class=\'col width-2-3 xlarge-up-width-3-5 xxlarge-up-width-2-3 padding-left-small\']')
+    except NoSuchElementException:
+        print('Could not find element')
+        print('Ending function execution')
+        return -1
     proper_url = wrapper_div_elem.find_element_by_tag_name('a').get_attribute('href')
     components = proper_url.split('&')
     proper_url = components[5]

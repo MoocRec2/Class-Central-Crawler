@@ -37,7 +37,7 @@ courses = list(Course.get_courses({'platform': 'Coursera'}))
 # courses = list(CourseAlt.get_courses({'description': {'$exists': 0}, 'error': {'$exists': 0}}))
 # courses = list(CourseAlt.get_courses({'link_fixed': False}))
 length = courses.__len__()
-print('Course Count:', length)
+print('No. of Courses Available:', length)
 
 
 # filtered_courses = []
@@ -78,12 +78,14 @@ print('Phase 2 - Retrieving Threads from Courses')
     Splitting the Courses to Multiple Sets
     Reason: So that the Threads can be retrieved in parallel
 '''
-l = numpy.array_split(numpy.array(courses), 5)
-print('Length:', l.__len__())
+# The parameter 'l' contains the lists of courses [[1,2], [2,1]]
+courses_list_list = numpy.array_split(numpy.array(courses), 5)
+print('List of courses has been split into', courses_list_list.__len__(), 'lists')
 
+# Iterate over the lists of courses to run each list of courses in a separate thread
 thread_list = []
 thread_num = 0
-for course_list in l:
+for course_list in courses_list_list:
     thread_num += 1
     thread = Thread(target=wrapper, args=(course_list, thread_num))
     thread_list.append(list)
@@ -91,4 +93,4 @@ for course_list in l:
 
 end_time = time.time()
 time_elapsed = end_time - start_time
-print('Time Elapsed:', time_elapsed, 'seconds')
+print('Total Time Elapsed:', time_elapsed, 'seconds')
