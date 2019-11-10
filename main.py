@@ -4,6 +4,8 @@ from db_connector import Course
 from db_connector import CourseAlt
 from pprint import pprint
 import time
+from threading import Thread
+import numpy
 
 '''
     Process
@@ -22,12 +24,15 @@ subjects_info_list = [
     {'key': 'stats', 'url': 'https://www.classcentral.com/subject/statistics'},
 ]
 
-''' Retrieve Courses of Subjects '''
-print('Retrieving Courses of Subjects')
+# ----- Retrieve Courses of Subjects -----
+print('Phase 1 - Retrieving Courses of Subjects')
 for subject_info in subjects_info_list:
-    print('---------------------------- SUBJECT:', subject_info['key'])
+    print('Subject:', subject_info['key'])
     retrieve_courses_from_subject(subject_info)
 
+print('Phase 1 - Retrieving Courses of Subjects - Finished')
+# The above code will gather the courses and save them in the database
+# The below code will get the same data from the database
 courses = list(Course.get_courses({'platform': 'Coursera'}))
 # courses = list(CourseAlt.get_courses({'description': {'$exists': 0}, 'error': {'$exists': 0}}))
 # courses = list(CourseAlt.get_courses({'link_fixed': False}))
@@ -65,15 +70,14 @@ def wrapper(courses_inner, thread_num):
 
 # retrieve_thread_of_course({'course_link': 'https://www.classcentral.com/course/coursera-machine-learning-835'})
 
-from threading import Thread
-import numpy
+
+# ----- Retrieve Threads of Courses -----
+print('Phase 2 - Retrieving Threads from Courses')
 
 ''' 
     Splitting the Courses to Multiple Sets
     Reason: So that the Threads can be retrieved in parallel
 '''
-
-print('Retrieving Threads from Courses')
 l = numpy.array_split(numpy.array(courses), 5)
 print('Length:', l.__len__())
 
