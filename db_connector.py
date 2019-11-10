@@ -3,14 +3,14 @@ from pymongo.errors import ServerSelectionTimeoutError
 from pprint import pprint
 import json
 
-with open('./db_credentials.json', 'r') as f:
-    db_credentials = json.load(f)
-
-connection_string = db_credentials['connectionString']
+# with open('./db_credentials.json', 'r') as f:
+#     db_credentials = json.load(f)
+#
+# connection_string = db_credentials['connectionString']
 
 # client = MongoClient('mongodb://forum_analyzer:admin123@ds157901.mlab.com:57901/moocrecv2')
-# client = MongoClient('mongodb://localhost:27017/moocrecv2')
-client = MongoClient(connection_string)
+client = MongoClient('mongodb://localhost:27017/moocrecv2')
+# client = MongoClient(connection_string)
 
 database = client.moocrecv2
 
@@ -184,3 +184,32 @@ class CourseraThreads:
         except:
             print('An Error Occurred')
             return False
+
+
+class CourseAlt:
+
+    @staticmethod
+    def upsert_courses(courses):
+        try:
+            for course in courses:
+                database.courses_alt.update_one({'course_link': course['course_link']}, {'$set': course},
+                                                upsert=True)
+            return True
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return False
+        # except:
+        #     print('An Error Occurred')
+        #     return False
+
+    @staticmethod
+    def get_courses(q):
+        try:
+            courses = database.courses_alt.find(q)
+            return courses
+        except ServerSelectionTimeoutError:
+            print('Error Connecting to Database')
+            return []
+        except:
+            print('An Error Occurred')
+            return []

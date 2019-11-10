@@ -12,6 +12,7 @@ import json
 from json import JSONDecodeError
 from db_connector import Thread
 from db_connector import Course
+from db_connector import CourseAlt
 from pprint import pprint
 from selenium.webdriver.chrome.options import Options
 
@@ -44,7 +45,18 @@ def retrieve_courses_from_subject(subject_info):
             course_element = cell_elements[1]
 
             course_name = course_element.find_element_by_xpath('a/span').text
-            course_link = course_element.find_elements_by_tag_name('a')[1].get_attribute('href')
+            a_elems = course_element.find_elements_by_tag_name('a')
+            links = []
+            for a_elem in a_elems:
+                link = a_elem.get_attribute('href')
+                if 'course' in link and 'provider' not in link:
+                    links.append(link)
+
+            if links.__len__() == 0:
+                course_link = ''
+            else:
+                course_link = links[0]
+            # other_links = [a_elems[0].get_attribute('href'), a_elems[2].get_attribute('href')]
 
             platform = course_element.find_element_by_xpath('span/a').text
 
@@ -64,6 +76,7 @@ def retrieve_courses_from_subject(subject_info):
                 'platform': platform,
                 'rating': rating,
                 'course_link': course_link,
+                # 'other_links': other_links,
                 'subject': subject_info['key']
             })
 
@@ -77,12 +90,15 @@ def retrieve_courses_from_subject(subject_info):
     for course in courses:
         if course['platform'] == 'Coursera':
             coursera_courses.append(course)
+        # else:
+        #     pprint(course)
+        # coursera_courses.append(course)
 
     print('Total No. of Exceptions Occurred:', total_no_of_exceptions)
     print('Courses Extracted:', courses.__len__())
     print('Coursera Courses:', coursera_courses.__len__())
 
-    status = Course.upsert_courses_alt(coursera_courses)
+    status = CourseAlt.upsert_courses(coursera_courses)
 
     if status:
         print('Courses have been saved to the database')
