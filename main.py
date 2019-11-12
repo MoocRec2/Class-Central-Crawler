@@ -22,6 +22,15 @@ subjects_info_list = [
     {'key': 'ai', 'url': 'https://www.classcentral.com/subject/ai'},
     {'key': 'bl0ck_crypt0', 'url': 'https://www.classcentral.com/subject/blockchain-cryptocurrency'},
     {'key': 'stats', 'url': 'https://www.classcentral.com/subject/statistics'},
+    {'key': 'alg&data_structs', 'url': 'https://www.classcentral.com/subject/algorithms-and-data-structures'},
+    {'key': 'iot', 'url': 'https://www.classcentral.com/subject/internet-of-things'},
+    {'key': 'it', 'url': 'https://www.classcentral.com/subject/information-technology'},
+    {'key': 'cyber_sec', 'url': 'https://www.classcentral.com/subject/cybersecurity'},
+    {'key': 'networking', 'url': 'https://www.classcentral.com/subject/computer-networking'},
+    {'key': 'ml', 'url': 'https://www.classcentral.com/subject/machine-learning'},
+    {'key': 'devops', 'url': 'https://www.classcentral.com/subject/devops'},
+    {'key': 'dl', 'url': 'https://www.classcentral.com/subject/deep-learning'},
+    {'key': 'quanta_comp', 'url': 'https://www.classcentral.com/subject/quantum-computing'},
 ]
 
 # ----- Retrieve Courses of Subjects -----
