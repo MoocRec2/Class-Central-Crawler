@@ -34,7 +34,7 @@ subjects_info_list = [
 ]
 
 # ----- Retrieve Courses of Subjects -----
-print('Phase 1 - Retrieving Courses of Subjects')
+print('----- Phase 1 - Retrieving Courses of Subjects -----')
 for subject_info in subjects_info_list:
     print('Subject:', subject_info['key'])
     retrieve_courses_from_subject(subject_info)
@@ -81,7 +81,7 @@ def wrapper(courses_inner, thread_num):
 
 
 # ----- Retrieve Threads of Courses -----
-print('Phase 2 - Retrieving Threads from Courses')
+print('----- Phase 2 - Retrieving Threads from Courses -----')
 
 ''' 
     Splitting the Courses to Multiple Sets
