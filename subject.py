@@ -29,8 +29,8 @@ def retrieve_courses_from_subject(subject_info):
 
     url = subject_info['url']
 
-    print('Extracting Courses of Subject:', url)
-    print('Navigating to Page...')
+    print('URL:', url)
+    # print('Navigating to Page...')
     driver.get(url)
 
     row_elements = driver.find_elements_by_tag_name('tr')
