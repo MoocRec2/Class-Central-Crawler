@@ -23,8 +23,13 @@ def retrieve_thread_of_course(course):
     start_time = time.time()
 
     options = Options()
-    options.add_argument('--headless')
-    options.add_argument('--disable-gpu')
+
+    run_in_background = True
+    if run_in_background:
+        options.add_argument('--headless')
+        options.add_argument('--disable-gpu')
+
+    print('Run In Background: ', run_in_background)
     driver = webdriver.Chrome('C:/chromedriver', options=options)
 
     course_url = course['course_link']
