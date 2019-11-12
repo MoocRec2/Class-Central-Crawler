@@ -19,7 +19,7 @@ import urllib.parse
 
 
 def retrieve_thread_of_course(course):
-    # try:
+    # Marking the start time to track elapsed time
     start_time = time.time()
 
     options = Options()
@@ -32,16 +32,20 @@ def retrieve_thread_of_course(course):
     print('Run In Background: ', run_in_background)
     driver = webdriver.Chrome('C:/chromedriver', options=options)
 
+    # The class central link of the course
     course_url = course['course_link']
     # course_url = 'https://www.classcentral.com/course/coursera-machine-learning-835'
 
+    # Retrieve course from database
     course = Course.get_course({'course_link': course_url})
 
+    # Navigate to course url
+    print('Course Url:', course_url)
     driver.get(course_url)
 
-    # ----- Course Description -----
+    # Extract course description
+    print('Extracting Description: IN PROGRESS')
     try:
-
         article_elem = driver.find_element_by_tag_name('article')
     except:
         print('Error Occurred - Article')
@@ -52,6 +56,7 @@ def retrieve_thread_of_course(course):
         if not db_operation_status:
             print('UNABLE to Mark in DB')
         return
+
     div_elem = article_elem.find_element_by_tag_name('div')
     description = div_elem.text
     course['description'] = description
@@ -60,16 +65,18 @@ def retrieve_thread_of_course(course):
     temp_course.pop('_id', 'qwe')
     db_operation_status = CourseAlt.upsert_courses([temp_course])
     if not db_operation_status:
-        print('Additional course information could not be saved to the database')
+        print('Extracting Description: ERROR (Not saved in DB)')
     else:
-        print('INSERTED')
+        print('Extracting Description: FINISHED (Saved in DB)')
 
+    print('Extracting URL (in platform): IN PROGRESS')
     try:
-        #  Proper URL
+        #  Proper URL - The link of the course in Coursera and not Class Central
         wrapper_div_elem = driver.find_element_by_xpath(
-            '//div[@class=\'col width-2-3 xlarge-up-width-3-5 xxlarge-up-width-2-3 padding-left-small\']')
+            '//div[@class=\'padding-horz-small padding-vert-small xlarge-up-padding-vert-medium row vert-align-middle '
+            'horz-align-center\']')
     except NoSuchElementException:
-        print('Could not find element')
+        print('Could not find element - Course Link (on platform) containing button')
         print('Ending function execution')
         return -1
     proper_url = wrapper_div_elem.find_element_by_tag_name('a').get_attribute('href')
@@ -86,9 +93,12 @@ def retrieve_thread_of_course(course):
     temp_course['link_fixed'] = True
     db_operation_status = CourseAlt.upsert_courses([temp_course])
     if not db_operation_status:
-        print('UNABLE to Save Proper URL in DB')
+        print('Extracting URL (in platform): ERROR (Not Saved in DB)')
+    else:
+        print('Extracting URL (in platform): FINISHED (Saved in DB)')
 
     # ----- Reviews (Posts of Thread) -----
+    print('Extracting Reviews: IN PROGRESS')
     try:
         review_div_elem = driver.find_element_by_id('reviews-items')
     except NoSuchElementException:
@@ -104,8 +114,6 @@ def retrieve_thread_of_course(course):
     print('No. of Review Items:', review_items_elems.__len__())
 
     reviews = []
-
-    # TODO: Pagination
 
     for review_item_elem in review_items_elems:
         review = {}
@@ -128,7 +136,7 @@ def retrieve_thread_of_course(course):
                 './div[@class=\'row\']/div/div[@class=\'review-content text-2 margin-vert-small\']')
             content = review_content_elem.text
         except NoSuchElementException:
-            print('Error Occurred - Content Not Present')
+            print('Error Occurred - Reviews Not Present')
             temp_course = copy.deepcopy(course)
             temp_course.pop('_id', 'qwe')
             temp_course['error'] = 'content'
@@ -158,7 +166,9 @@ def retrieve_thread_of_course(course):
 
     db_operation_status = CourseraThreads.upsert_courses([thread])
     if not db_operation_status:
-        print('Thread information could not be saved to the database')
+        print('Extracting Reviews: ERROR (Not saved to DB)')
+    else:
+        print('Extracting Reviews: FINISHED (Saved to DB)')
 
     print('Read_more Count:', read_more)
     print('Review Length:', reviews.__len__())
