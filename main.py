@@ -39,7 +39,7 @@ for subject_info in subjects_info_list:
     print('Subject:', subject_info['key'])
     retrieve_courses_from_subject(subject_info)
 
-print('Phase 1 - Retrieving Courses of Subjects - Finished')
+print('Phase 1 - Retrieving Courses of Subjects - FINISHED')
 # The above code will gather the courses and save them in the database
 # The below code will get the same data from the database
 courses = list(Course.get_courses({'platform': 'Coursera'}))
@@ -83,22 +83,31 @@ def wrapper(courses_inner, thread_num):
 # ----- Retrieve Threads of Courses -----
 print('----- Phase 2 - Retrieving Threads from Courses -----')
 
-''' 
-    Splitting the Courses to Multiple Sets
-    Reason: So that the Threads can be retrieved in parallel
-'''
-# The parameter 'l' contains the lists of courses [[1,2], [2,1]]
-courses_list_list = numpy.array_split(numpy.array(courses), 5)
-print('List of courses has been split into', courses_list_list.__len__(), 'lists')
+enable_multi_threading = False
+print('Enable Multi-Threading: ', enable_multi_threading)
 
-# Iterate over the lists of courses to run each list of courses in a separate thread
-thread_list = []
-thread_num = 0
-for course_list in courses_list_list:
-    thread_num += 1
-    thread = Thread(target=wrapper, args=(course_list, thread_num))
-    thread_list.append(list)
-    thread.start()
+if enable_multi_threading:
+
+    ''' 
+        Splitting the Courses to Multiple Sets
+        Reason: So that the Threads can be retrieved in parallel
+    '''
+    # The parameter 'l' contains the lists of courses [[1,2], [2,1]]
+    courses_list_list = numpy.array_split(numpy.array(courses), 5)
+    print('List of courses has been split into', courses_list_list.__len__(), 'lists')
+
+    # Iterate over the lists of courses to run each list of courses in a separate thread
+    thread_list = []
+    thread_num = 0
+    for course_list in courses_list_list:
+        thread_num += 1
+        thread = Thread(target=wrapper, args=(course_list, thread_num))
+        thread_list.append(list)
+        thread.start()
+else:
+    print('No. of Courses:', courses.__len__())
+    for course in courses:
+        retrieve_thread_of_course(course)
 
 end_time = time.time()
 time_elapsed = end_time - start_time
